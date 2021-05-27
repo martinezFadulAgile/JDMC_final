@@ -69,8 +69,8 @@ LOCATION '/user/cloudera/user/cloudera/Materiales/equipo2/JDMC/cat_tipo_contac';
 
 ################ INTERNAS ###################
 use db_jdmc;
-CREATE TABLE IF NOT EXISTS db_jdmc.i_clt_datos(cod_cliente string,clt_nombre strin$
-clt_paterno string,clt_materno string,
+CREATE TABLE IF NOT EXISTS db_jdmc.i_clt_datos(cod_cliente string,
+clt_nombre string,clt_paterno string,clt_materno string,
 clt_fec_nac string,clt_direc string,clt_sexo string,clt_pais_nac string, 
 clt_nac string,clt_tipo string,
 clt_razon_social string,clt_fec_const string)
@@ -124,6 +124,21 @@ CREATE TABLE IF NOT EXISTS db_jdmc.i_cat_tipo_contac(
 clt_tipo_contac string,descripcion string)
 ROW FORMAT delimited fields terminated by '|' lines terminated by '\n'
 STORED AS parquet
+
+
+
+
+#####INTERNAS MORADAS######
+
+use db_jdmc;
+CREATE TABLE IF NOT EXISTS db_jdmc.i_clt_info_dats(cod_cliente string, 
+clt_tipo_desc string, clt_nombre string, clt_paterno string,
+clt_materno string, clt_fec_nac string,clt_sexo string,
+clt_pais_nac string, pasaporte string, email string,
+numCuenta string)
+STORED AS parquet
+
+
 
 
 ###################################
