@@ -1,0 +1,160 @@
+use db_jdmc;
+CREATE EXTERNAL TABLE IF NOT EXISTS db_jdmc.clt_datos(cod_cliente string,
+clt_nombre string, clt_paterno string,clt_materno string,
+clt_fec_nac string,clt_direc string,clt_sexo string,clt_pais_nac string, 
+clt_nac string,clt_tipo string,
+clt_razon_social string,clt_fec_const string)
+ROW FORMAT delimited fields terminated by ',' lines terminated by '\n'
+STORED AS textfile
+LOCATION '/user/cloudera/Materiales/equipo2/JDMC/clt_datos'
+tblproperties("skip.header.line.count"="1");
+
+use db_jdmc;
+CREATE EXTERNAL TABLE IF NOT EXISTS db_jdmc.clt_documentacion(cod_cliente string, 
+clt_tipo_doc string, clt_numdoc)
+ROW FORMAT delimited fields terminated by '|' lines terminated by '\n'
+STORED AS textfile
+LOCATION '/user/cloudera/Materiales/equipo2/JDMC/clt_documentacion'
+tblproperties("skip.header.line.count"="1");
+
+use db_jdmc;
+CREATE EXTERNAL TABLE IF NOT EXISTS db_jdmc.clt_contactabilidad(cod_cliente string, 
+clt_tipo_contac string, clt_contac string)
+ROW FORMAT delimited fields terminated by ',' lines terminated by '\n'
+STORED AS textfile
+LOCATION '/user/cloudera/Materiales/equipo2/JDMC/clt_contactabilidad'
+tblproperties("skip.header.line.count"="1");
+
+use db_jdmc;
+CREATE EXTERNAL TABLE IF NOT EXISTS db_jdmc.clt_relacion_cta_clte(
+cod_cliente string, numCuenta string)
+ROW FORMAT delimited fields terminated by '\u0059' lines terminated by '\n'
+STORED AS textfile
+LOCATION '/user/cloudera/Materiales/equipo2/JDMC/clt_relacion_cta_clte'
+tblproperties("skip.header.line.count"="1");
+
+use db_jdmc;
+CREATE EXTERNAL TABLE IF NOT EXISTS db_jdmc.clt_sucursal(
+cod_cliente string, id_sucursal string)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'
+WITH SERDEPROPERTIES ("input.regex" = "(.{8})(.{4})")
+STORED AS textfile
+LOCATION '/user/cloudera/Materiales/equipo2/JDMC/clt_sucursal'
+
+use db_jdmc;
+CREATE EXTERNAL TABLE IF NOT EXISTS db_jdmc.cat_tipo_clte(
+clt_tipo string, descripcion string)
+ROW FORMAT delimited fields terminated by '\u0059' lines terminated by '\n'
+STORED AS textfile
+location '/user/cloudera/Materiales/equipo2/JDMC/cat_tipo_clte/';
+
+
+use db_jdmc;
+CREATE EXTERNAL TABLE IF NOT EXISTS db_jdmc.cat_tipo_docum(
+clt_tipo_doc string, descripcion string)
+ROW FORMAT delimited fields terminated by '|' lines terminated by '\n'
+STORED AS textfile
+LOCATION '/user/cloudera/Materiales/equipo2/JDMC/cat_tipo_docum'
+tblproperties("skip.header.line.count"="1");
+
+use db_jdmc;
+CREATE EXTERNAL TABLE IF NOT EXISTS db_jdmc.cat_tipo_contac(
+clt_tipo_contac string,descripcion string)
+ROW FORMAT delimited fields terminated by '|' lines terminated by '\n'
+STORED AS textfile
+LOCATION '/user/cloudera/user/cloudera/Materiales/equipo2/JDMC/cat_tipo_contac';
+
+
+
+
+################ INTERNAS ###################
+use db_jdmc;
+CREATE TABLE IF NOT EXISTS db_jdmc.i_clt_datos(cod_cliente string,clt_nombre strin$
+clt_paterno string,clt_materno string,
+clt_fec_nac string,clt_direc string,clt_sexo string,clt_pais_nac string, 
+clt_nac string,clt_tipo string,
+clt_razon_social string,clt_fec_const string)
+ROW FORMAT delimited fields terminated by ',' lines terminated by '\n'
+STORED AS parquet
+tblproperties("skip.header.line.count"="1");
+
+use db_jdmc;
+CREATE TABLE IF NOT EXISTS db_jdmc.i_clt_documentacion(cod_cliente string, 
+clt_tipo_doc string, clt_numdoc)
+ROW FORMAT delimited fields terminated by '|' lines terminated by '\n'
+STORED AS parquet
+tblproperties("skip.header.line.count"="1");
+
+use db_jdmc;
+CREATE TABLE IF NOT EXISTS db_jdmc.i_clt_contactabilidad(cod_cliente string, 
+clt_tipo_contac string, clt_contac string)
+ROW FORMAT delimited fields terminated by ',' lines terminated by '\n'
+STORED AS parquet
+tblproperties("skip.header.line.count"="1");
+
+use db_jdmc;
+CREATE TABLE IF NOT EXISTS db_jdmc.i_clt_relacion_cta_clte(
+cod_cliente string, numCuenta string)
+ROW FORMAT delimited fields terminated by '\u0059' lines terminated by '\n'
+STORED AS parquet
+tblproperties("skip.header.line.count"="1");
+
+use db_jdmc;
+CREATE TABLE IF NOT EXISTS db_jdmc.i_clt_sucursal(
+cod_cliente string, id_sucursal string)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'
+WITH SERDEPROPERTIES ("input.regex" = "(.{8})(.{4})")
+STORED AS parquet
+
+use db_jdmc;
+CREATE TABLE IF NOT EXISTS db_jdmc.i_cat_tipo_clte(
+clt_tipo string, descripcion string)
+ROW FORMAT delimited fields terminated by '\u0059' lines terminated by '\n'
+STORED AS parquet
+
+use db_jdmc;
+CREATE TABLE IF NOT EXISTS db_jdmc.i_cat_tipo_docum(
+clt_tipo_doc string, descripcion string)
+ROW FORMAT delimited fields terminated by '|' lines terminated by '\n'
+STORED AS parquet
+tblproperties("skip.header.line.count"="1");
+
+use db_jdmc;
+CREATE TABLE IF NOT EXISTS db_jdmc.i_cat_tipo_contac(
+clt_tipo_contac string,descripcion string)
+ROW FORMAT delimited fields terminated by '|' lines terminated by '\n'
+STORED AS parquet
+
+
+###################################
+INSERT overwrite table clt_info_dats select
+clt_datos.cod_cliente, clt_datos.clt_tipo,
+clt_datos.clt_nombre, clt_datos.clt_paterno, clt_datos.clt_materno,
+clt_datos.clt_fec_nac,clt_datos.clt_sexo, clt_datos.clt_pais_nac,
+clt_documentacion.clt_numdoc, clt_contactabilidad.clt_contac,
+clt_relacion_cta_clte.numCuenta
+FROM clt_datos
+
+LEFT OUTER JOIN clt_documentacion
+ON clt_datos.cod_cliente=clt_documentacion.cod_cliente and
+clt_documentacion.clt_tipo_doc=3
+
+LEFT OUTER JOIN clt_contactabilidad
+ON clt_datos.cod_cliente = clt_contactabilidad.cod_cliente and
+clt_contactabilidad.clt_tipo_contac=1
+
+LEFT OUTER JOIN clt_relacion_cta_clte
+ON clt_datos.cod_cliente=clt_relacion_cta_clte.cod_cliente;
+#######################
+
+INSERT overwrite table clt_info_cuenta select clt_datos.cod_cliente,
+clt_relacion_cta_clte.numCuenta, clt_sucursal.id_sucursal FROM clt_datos
+INNER JOIN clt_relacion_cta_clte
+ON clt_datos.cod_cliente = clt_relacion_cta_clte.cod_cliente
+INNER JOIN clt_sucursal
+ON clt_datos.cod_cliente=clt_sucursal.cod_cliente;
+
+
+
+use db_jdmc;
+insert into i_clt_datos select * from clt_datos;
