@@ -25,12 +25,24 @@ vale la pena checarla en spark.
 Falta aplicarle un AVG a este resultado, creo que vale la pena
 ver como podemos aplicarlo en spark ya que tenemos esta tabla.
 
+--------------------------------------------------------------------
+select AVG(a.edades) FROM (
+    SELECT DATEDIFF('2020-05-27', b.date)/365.25 AS edades FROM
+    (select clt_fec_nac as date from clt_datos where clt_tipo = 1) b
+) a;
+
+
+
 **********************************************
 
 
 5.-SELECT  clt_nac, COUNT(clt_nac) FROM Customers Group By clt_nac;
-55null
+55
 100
 100
 1000Mexico
 **********************************************
+
+6.-
+
+SELECT substring_index(email,'@',-1) as email, COUNT(*) AS count from clt_info_dats;
