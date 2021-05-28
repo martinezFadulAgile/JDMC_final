@@ -4,7 +4,7 @@ SELECT COUNT(DISTINCT id_sucursal) FROM CLT_SUCURSAL;  (472)
 
 Hacer grafica comparandolo contra
 SELECT COUNT (id_sucursal) FROM CLT_SUCURSAL;  (1355)
-Para saber el # total de sucursales
+buPara saber el # total de sucursales
 contra el numero total de registros en la tabla.
 **********************************************
 
@@ -17,10 +17,23 @@ vale la pena checarla en spark.
 
 
 **********************************************
+3.-
+spark.sql("SELECT COUNT(clt_tipo_doc) as documentos, cod_cliente FROM clt_documentacion
+ group by cod_cliente HAVING COUNT (clt_tipo_doc)=3").show()
+//Muestra 0 ya que no hay clientes con 3 tipo de docs
+
+spark.sql("SELECT COUNT(clt_tipo_doc) as documentos, cod_cliente FROM clt_documentacion group by
+ cod_cliente HAVING COUNT (clt_tipo_doc)=2 ").show()
+ //muestra los clientes con 2 tipos de doc
+
+ spark.sql("SELECT COUNT(clt_tipo_doc) as documentos, cod_cliente FROM clt_documentacion group by
+ cod_cliente HAVING COUNT (clt_tipo_doc)=1").show()
+//muestra los clientes con 1 tipo de doc
+
 
 **********************************************
-4.-select DATEDIFF( '2020-05-27' ,a.date)/365.25 FROM
- (select clt_fec_nac as date from clt_datos where clt_tipo = 1) a;
+4.-select DATEDIFF( '2020-05-27' ,date)/365.25 FROM
+ (select clt_fec_nac as date from clt_datos where clt_tipo = 1);
 
 Falta aplicarle un AVG a este resultado, creo que vale la pena
 ver como podemos aplicarlo en spark ya que tenemos esta tabla.
@@ -30,6 +43,16 @@ select AVG(a.edades) FROM (
     SELECT DATEDIFF('2020-05-27', b.date)/365.25 AS edades FROM
     (select clt_fec_nac as date from clt_datos where clt_tipo = 1) b
 ) a;
+
+Select DATEDIFF('2020-05-27', select clt_fec_nac as date from clt_datos where clt_tipo = 1)
+
+sql
+//Hacer tablas de estas edades
+spark.sql("Select DATEDIFF('2020-05-27', b.date )/365.25 from (select clt_fec_nac as date from clt_datos where clt_tipo = 1)as b ").show()
+
+// AVG
+spark.sql("Select AVG(a.avg) FROM( SELECT DATEDIFF('2020-05-27', b.date )/365.25 as avg from (select clt_fec_nac as date from clt_datos where clt_tipo = 1)as b ) as a").show()
+
 
 
 
@@ -44,5 +67,20 @@ select AVG(a.edades) FROM (
 **********************************************
 
 6.-
+spark.sql("select substring_index(clt_contac,'@',-1) as dominio, COUNT(*) as numeros from clt_contactabilidad WHERE clt_tipo_contac=1 GROUP BY substring_index(clt_contac,'@',-1)").show()
 
-SELECT substring_index(email,'@',-1) as email, COUNT(*) AS count from clt_info_dats;
+
+7.-
+// Esta se hace en diferentes queries, primero se añaden las columnas con alter table
+//No quise modificar las tablas externas pa no cagarla
+El comando en SQL seria el siguiente
+ALTER TABLE nombre_tabla ADD CLT_AÑO_NACIMIENTO STRING  //se añade la columna año nacimiento
+ALTER TABLE nombre_table ADD CLT_INICIALES STRING  // se añade la columna CLT_INICIALES
+
+//Despues se hara un insert de los datos.
+INSERT INTO CLT_DATOS(CLT_AÑO_NACIMIENTO,CLT_INICIALES)
+VALUES()
+
+
+8.-
+Construir una tabla 
