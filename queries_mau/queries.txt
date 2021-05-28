@@ -81,6 +81,10 @@ ALTER TABLE nombre_table ADD CLT_INICIALES STRING  // se añade la columna CLT_I
 INSERT INTO CLT_DATOS(CLT_AÑO_NACIMIENTO,CLT_INICIALES)
 VALUES()
 
+//Haer la columna de las inciales:
+spark.sql("select concat(a,b,c) iniciales from (select SUBSTRING(clt_nombre,1,1) as a, 
+SUBSTRING(clt_paterno,1,1) as b,substring(clt_materno,1,1) as c from i_clt_datos)").show()
+
 
 8.-
 Construir una tabla 
