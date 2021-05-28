@@ -1,0 +1,36 @@
+**********************************************
+1.-
+SELECT COUNT(DISTINCT id_sucursal) FROM CLT_SUCURSAL;  (472)
+
+Hacer grafica comparandolo contra
+SELECT COUNT (id_sucursal) FROM CLT_SUCURSAL;  (1355)
+Para saber el # total de sucursales
+contra el numero total de registros en la tabla.
+**********************************************
+
+2.- SELECT q1.col / q2.total FROM (
+    Select COUNT(clt_tipo) as col from clt_datos where clt_tipo=2) q1,
+    (Select COUNT(*) as total from clt_datos) q2;
+
+Aqui falta multiplicar por 100 al principio, query muy pesada
+vale la pena checarla en spark.
+
+
+**********************************************
+
+**********************************************
+4.-select DATEDIFF( '2020-05-27' ,a.date)/365.25 FROM
+ (select clt_fec_nac as date from clt_datos where clt_tipo = 1) a;
+
+Falta aplicarle un AVG a este resultado, creo que vale la pena
+ver como podemos aplicarlo en spark ya que tenemos esta tabla.
+
+**********************************************
+
+
+5.-SELECT  clt_nac, COUNT(clt_nac) FROM Customers Group By clt_nac;
+55null
+100
+100
+1000Mexico
+**********************************************
