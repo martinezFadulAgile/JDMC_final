@@ -88,3 +88,12 @@ SUBSTRING(clt_paterno,1,1) as b,substring(clt_materno,1,1) as c from i_clt_datos
 
 8.-
 Construir una tabla 
+
+
+#########QUIERIES EXTRAS########
+OBTERNER MAIMO Y MINIMO DE EDAD.
+dsakfhsadlfhdsaf
+
+
+OBTENER MODA DE EDAD
+asklajdsf
