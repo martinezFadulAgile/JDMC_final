@@ -22,12 +22,11 @@ spark.sql("SELECT COUNT(clt_tipo_doc) as documentos, cod_cliente FROM clt_docume
  group by cod_cliente HAVING COUNT (clt_tipo_doc)=3").show()
 //Muestra 0 ya que no hay clientes con 3 tipo de docs
 
-spark.sql("SELECT COUNT(clt_tipo_doc) as documentos, cod_cliente FROM clt_documentacion group by
- cod_cliente HAVING COUNT (clt_tipo_doc)=2 ").show()
+spark.sql("SELECT Count(documentos) from (SELECT COUNT(clt_tipo_doc) as documentos, cod_cliente FROM clt_documentacion group by cod_cliente HAVING COUNT (clt_tipo_doc)=2)").show()
  //muestra los clientes con 2 tipos de doc
 
- spark.sql("SELECT COUNT(clt_tipo_doc) as documentos, cod_cliente FROM clt_documentacion group by
- cod_cliente HAVING COUNT (clt_tipo_doc)=1").show()
+ spark.sql("Select count(documentos) (SELECT COUNT(clt_tipo_doc) as documentos, cod_cliente FROM clt_documentacion 
+ group by cod_cliente HAVING COUNT (clt_tipo_doc)=1)").show()
 //muestra los clientes con 1 tipo de doc
 
 
@@ -207,3 +206,19 @@ STORED AS parquet;
 
 10.-
 Explicaremos las tablas de cliente rfc, cliente curp y cliente pasaporte
+
+
+
+*************SUCURSALES*********:	
+spark.sql("select a from (select id_sucursal as a, count(id_sucursal)
+as b from i_clt_sucursal group by id_sucursal) where b=9").show()
+// OBTIENE LA SUCURSAL CON EL MAYOR NUMERO DE CLIENTES 
+
+spark.sql("select COUNT(a) from (select id_sucursal as a, 
+count(id_sucursal) as b from i_clt_sucursal group by id_sucursal) where b=1").show()
+//mUESTRA LAS SUCURSALES QUE SOLO TIENEN 1 CLIENTE
+
+spark.sql("select COUNT(a) from (select id_sucursal as a, 
+count(id_sucursal) as b from i_clt_sucursal group by id_sucursal)").show()
+//mUESTRA CUAS SUCURSALES DISTINTAS HAY
+
