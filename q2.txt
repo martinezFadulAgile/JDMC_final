@@ -20,14 +20,23 @@ vale la pena checarla en spark.
 3.-
 spark.sql("SELECT COUNT(clt_tipo_doc) as documentos, cod_cliente FROM clt_documentacion
  group by cod_cliente HAVING COUNT (clt_tipo_doc)=3").show()
-//Muestra 0 ya que no hay clientes con 3 tipo de docs
+//Muestra 0 ya que no hay clientes con 3 tipo de docs 
 
 spark.sql("SELECT Count(documentos) from (SELECT COUNT(clt_tipo_doc) as documentos, cod_cliente FROM clt_documentacion group by cod_cliente HAVING COUNT (clt_tipo_doc)=2)").show()
- //muestra los clientes con 2 tipos de doc
+ //muestra los clientes con 2 tipos de doc (427)
 
  spark.sql("Select count(documentos) (SELECT COUNT(clt_tipo_doc) as documentos, cod_cliente FROM clt_documentacion 
  group by cod_cliente HAVING COUNT (clt_tipo_doc)=1)").show()
-//muestra los clientes con 1 tipo de doc
+//muestra los clientes con 1 tipo de doc (929)
+
+***QUERIES EXTRAS PARA SABER CUANTAS VECES ESTA EL DOCUMENTO EN LOS CLIENTES***
+
+Select count (*) from i_clt_documentacion where clt_tipo_docum = 1; (55)
+
+Select count (*) from i_clt_documentacion where clt_tipo_docum = 2; (874)
+
+Select count (*) from i_clt_documentacion where clt_tipo_docum = 3; (853)
+
 
 
 **********************************************
