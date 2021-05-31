@@ -1,0 +1,189 @@
+**********************************************
+1.-
+SELECT COUNT(DISTINCT id_sucursal) FROM CLT_SUCURSAL;  (472)
+
+Hacer grafica comparandolo contra
+SELECT COUNT (id_sucursal) FROM CLT_SUCURSAL;  (1355)
+buPara saber el # total de sucursales
+contra el numero total de registros en la tabla.
+**********************************************
+
+2.- SELECT q1.col / q2.total FROM (
+    Select COUNT(clt_tipo) as col from clt_datos where clt_tipo=2) q1,
+    (Select COUNT(*) as total from clt_datos) q2;
+
+Aqui falta multiplicar por 100 al principio, query muy pesada
+vale la pena checarla en spark.
+
+
+**********************************************
+3.-
+spark.sql("SELECT COUNT(clt_tipo_doc) as documentos, cod_cliente FROM clt_documentacion
+ group by cod_cliente HAVING COUNT (clt_tipo_doc)=3").show()
+//Muestra 0 ya que no hay clientes con 3 tipo de docs
+
+spark.sql("SELECT COUNT(clt_tipo_doc) as documentos, cod_cliente FROM clt_documentacion group by
+ cod_cliente HAVING COUNT (clt_tipo_doc)=2 ").show()
+ //muestra los clientes con 2 tipos de doc
+
+ spark.sql("SELECT COUNT(clt_tipo_doc) as documentos, cod_cliente FROM clt_documentacion group by
+ cod_cliente HAVING COUNT (clt_tipo_doc)=1").show()
+//muestra los clientes con 1 tipo de doc
+
+
+**********************************************
+4.-select DATEDIFF( '2020-05-27' ,date)/365.25 FROM
+ (select clt_fec_nac as date from clt_datos where clt_tipo = 1);
+
+Falta aplicarle un AVG a este resultado, creo que vale la pena
+ver como podemos aplicarlo en spark ya que tenemos esta tabla.
+
+--------------------------------------------------------------------
+select AVG(a.edades) FROM (
+    SELECT DATEDIFF('2020-05-27', b.date)/365.25 AS edades FROM
+    (select clt_fec_nac as date from clt_datos where clt_tipo = 1) b
+) a;
+
+Select DATEDIFF('2020-05-27', select clt_fec_nac as date from clt_datos where clt_tipo = 1)
+
+sql
+//Hacer tablas de estas edades
+spark.sql("Select DATEDIFF('2020-05-27', b.date )/365.25 from (select clt_fec_nac as date from clt_datos where clt_tipo = 1)as b ").show()
+
+// AVG
+spark.sql("Select AVG(a.avg) FROM( SELECT DATEDIFF('2020-05-27', b.date )/365.25 as avg from (select clt_fec_nac as date from clt_datos where clt_tipo = 1)as b ) as a").show()
+
+
+
+
+**********************************************
+
+
+5.-SELECT  clt_nac, COUNT(clt_nac) FROM Customers Group By clt_nac;
+55
+100
+100
+1000Mexico
+**********************************************
+
+6.-
+spark.sql("select substring_index(clt_contac,'@',-1) as dominio, COUNT(*) as numeros from clt_contactabilidad WHERE clt_tipo_contac=1 GROUP BY substring_index(clt_contac,'@',-1)").show()
+
+
+7.-
+// Primero se añaden las columnas solicitadas a la tabla interna
+
+spark.sql("ALTER TABLE i_clt_datos ADD COLUMNS (clt_anios STRING )")   //agrega la columna años
+spark.sql("ALTER TABLE i_clt_datos ADD COLUMNS (clt_iniciales STRING )") // agrega la columna de las iniciales
+
+//Creamos 2 tablas auxiliares que relacionan al cliente con su fecha e iniciales
+CREATE TABLE IF NOT EXISTS db_jdmc.aux_anio(cod_cliente string, anio string)
+STORED AS parquet
+
+CREATE TABLE IF NOT EXISTS db_jdmc.aux_iniciales(cod_cliente string, iniciales string)
+STORED AS parquet
+
+//Llenamos las tablas auxiliares ocn la informacion correcta
+
+INSERT INTO aux_iniciales SELECT out.cod, CONCAT(out.a,out.b,out.c) from (select cod_cliente as cod, SUBSTRING(clt_nombre,1,1) AS a, SUBSTRING(clt_paterno,1,1) as b, 
+SUBSTRING(clt_materno,1,1) as c FROM i_clt_datos) out
+
+INSERT INTO aux_anio select cod_cliente, SUBSTRING(clt_fec_nac,1,4) from  i_clt_datos;
+
+// Hacemos un overwrite ya que spark no permite la operacion UPDATE y en HIVE
+es necesario realizar confiuraciones al archivo xml
+//En spark no la sintaxis es LEFT JOIN
+
+INSERT overwrite table i_clt_datos_test select 
+i_clt_datos.cod_cliente, i_clt_datos.clt_nombre,
+i_clt_datos.clt_paterno, i_clt_datos.clt_materno,
+i_clt_datos.clt_fec_nac, i_clt_datos.clt_direc,
+i_clt_datos.clt_sexo, i_clt_datos.clt_pais_nac,
+i_clt_datos.clt_nac, i_clt_datos.clt_tipo,
+i_clt_datos.clt_razon_social, i_clt_datos.clt_fec_const,
+aux_anio.anio, aux_iniciales.iniciales
+FROM i_clt_datos
+LEFT OUTER JOIN aux_anio
+ON i_clt_datos.cod_cliente=aux_anio.cod_cliente 
+LEFT OUTER JOIN aux_iniciales
+ON i_clt_datos.cod_cliente=aux_iniciales.cod_cliente
+
+
+8.-
+//crear una tabla auxiliar para el nombre del cliente, relacionarla con el codigo de cliente.
+CREATE TABLE IF NOT EXISTS db_jdmc.aux_nombre(cod_cliente string, clt_nombre_completo string)
+STORED AS parquet
+
+ //Llenar la tabla auxiliar Tambiien se usara en la 9
+INSERT INTO aux_nombre SELECT out.cod, CONCAT(out.a,' ',out.b,' ',out.c) from (select cod_cliente as cod, clt_nombre AS a, clt_paterno as b, 
+clt_materno as c FROM i_clt_datos) out
+
+//Tabla cliente-rfc***********************************************************************
+CREATE TABLE IF NOT EXISTS db_jdmc.cliente_rfc(cod_cliente string, rfc string  )
+STORED AS parquet
+
+INSERT OVERWRITE TABLE cliente_rfc select
+i_clt_datos.cod_cliente, NVL(clt_documentacion.clt_numdoc,'No Disponible')
+from i_clt_datos
+LEFT OUTER JOIN clt_documentacion
+ON i_clt_datos.cod_cliente=clt_documentacion.cod_cliente AND clt_documentacion.clt_tipo_doc=1;
+
+//Tabla cliente-curp**********************************************************************
+CREATE TABLE IF NOT EXISTS db_jdmc.cliente_curp(cod_cliente string, curp string  )
+STORED AS parquet
+
+INSERT INTO  cliente_curp select
+i_clt_datos.cod_cliente, NVL(clt_documentacion.clt_numdoc,'No Disponible')
+from i_clt_datos
+LEFT  JOIN clt_documentacion
+ON i_clt_datos.cod_cliente=clt_documentacion.cod_cliente AND clt_documentacion.clt_tipo_doc=2;
+
+// Tabla cliente-pasaporte*****************************************************************
+CREATE TABLE IF NOT EXISTS db_jdmc.cliente_pasaporte(cod_cliente string,  pasaporte string)
+STORED AS parquet
+
+INSERT INTO cliente_pasaporte select
+i_clt_datos.cod_cliente, NVL(clt_documentacion.clt_numdoc,'No Disponible')
+from i_clt_datos
+LEFT OUTER JOIN clt_documentacion
+ON i_clt_datos.cod_cliente=clt_documentacion.cod_cliente AND clt_documentacion.clt_tipo_doc=3;
+
+// Tabla8
+//
+CREATE TABLE IF NOT EXISTS db_jdmc.clt_docs_disp(cod_cliente string, nombre_completo string ,rfc string, curp string, pasaporte string )
+STORED AS parquet
+
+INSERT INTO clt_docs_disp select
+aux_nombre.cod_cliente, aux_nombre.clt_nombre_completo, cliente_rfc.rfc, cliente_curp.curp, cliente_pasaporte.pasaporte
+FROM aux_nombre
+LEFT OUTER JOIN cliente_rfc
+ON aux_nombre.cod_cliente=cliente_rfc.cod_cliente
+LEFT OUTER JOIN cliente_curp
+ON aux_nombre.cod_cliente=cliente_curp.cod_cliente
+LEFT OUTER JOIN cliente_pasaporte
+ON aux_nombre.cod_cliente=cliente_pasaporte.cod_cliente
+
+9.-
+//usaremos la tabla de aux_nombre para el nombre nombre_completo
+//tabla cliente-email
+CREATE TABLE IF NOT EXISTS db_jdmc.cliente_email(cod_cliente string, email string  )
+STORED AS parquet
+
+INSERT INTO  cliente_email_tel select
+i_clt_datos.cod_cliente, NVL(clt_contactabilidad.clt_contac,'No Email'), 
+from i_clt_datos
+LEFT  JOIN clt_contactabilidad
+ON i_clt_datos.cod_cliente=clt_contactabilidad.cod_cliente AND clt_contactabilidad.clt_tipo_contac=1;
+
+//tabla cliente-telefono principal
+CREATE TABLE IF NOT EXISTS db_jdmc.cliente_telefono_principal(cod_cliente string, telefono_principal string)
+STORED AS parquet;
+
+
+
+
+
+
+
+10.-
+Explicaremos las tablas de cliente rfc, cliente curp y cliente pasaporte

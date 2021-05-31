@@ -10,11 +10,10 @@ contra el numero total de registros en la tabla.
 
 2.- SELECT q1.col / q2.total FROM (
     Select COUNT(clt_tipo) as col from clt_datos where clt_tipo=2) q1,
-    (Select COUNT(*) as total from clt_datos) q2;
-
-Aqui falta multiplicar por 100 al principio, query muy pesada
-vale la pena checarla en spark.
-
+    (Select COUNT(*) as total from clt_datos) q2; ********HIVE
+	
+	SELECT COUNT(clt_tipo) from clt_datos where clt_tipo=2 *100 /
+	(SELECT COUNT(clt_tipo) from clt_datos) ********SPARK
 
 **********************************************
 3.-
@@ -30,36 +29,29 @@ spark.sql("SELECT COUNT(clt_tipo_doc) as documentos, cod_cliente FROM clt_docume
  cod_cliente HAVING COUNT (clt_tipo_doc)=1").show()
 //muestra los clientes con 1 tipo de doc
 
-
 **********************************************
-4.-select DATEDIFF( '2020-05-27' ,date)/365.25 FROM
- (select clt_fec_nac as date from clt_datos where clt_tipo = 1);
-
-Falta aplicarle un AVG a este resultado, creo que vale la pena
-ver como podemos aplicarlo en spark ya que tenemos esta tabla.
-
---------------------------------------------------------------------
+4.-
 select AVG(a.edades) FROM (
     SELECT DATEDIFF('2020-05-27', b.date)/365.25 AS edades FROM
-    (select clt_fec_nac as date from clt_datos where clt_tipo = 1) b
-) a;
+    (select clt_fec_nac as date from clt_datos where clt_tipo = 1) 
+	b) a; ******SPARK
 
 Select DATEDIFF('2020-05-27', select clt_fec_nac as date from clt_datos where clt_tipo = 1)
 
 sql
 //Hacer tablas de estas edades
-spark.sql("Select DATEDIFF('2020-05-27', b.date )/365.25 from (select clt_fec_nac as date from clt_datos where clt_tipo = 1)as b ").show()
+spark.sql("Select DATEDIFF('2020-05-27', b.date )/365.25 
+from (select clt_fec_nac as date from clt_datos where clt_tipo = 1)as b ").show() **
 
 // AVG
-spark.sql("Select AVG(a.avg) FROM( SELECT DATEDIFF('2020-05-27', b.date )/365.25 as avg from (select clt_fec_nac as date from clt_datos where clt_tipo = 1)as b ) as a").show()
-
-
-
+spark.sql("Select AVG(a.avg) FROM( SELECT DATEDIFF('2020-05-27', b.date )/
+365.25 as avg from (select clt_fec_nac as date from clt_datos
+where clt_tipo = 1)as b ) as a").show()
 
 **********************************************
 
 
-5.-SELECT  clt_nac, COUNT(clt_nac) FROM Customers Group By clt_nac;
+5.-SELECT  clt_nac, COUNT(distinct clt_nac) FROM clt_datos Group By clt_nac;
 55
 100
 100
@@ -96,4 +88,4 @@ dsakfhsadlfhdsaf
 
 
 OBTENER MODA DE EDAD
-asklajdsf
+asklajdsf	
