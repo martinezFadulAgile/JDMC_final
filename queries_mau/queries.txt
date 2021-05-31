@@ -88,4 +88,10 @@ dsakfhsadlfhdsaf
 
 
 OBTENER MODA DE EDAD
+<<<<<<< HEAD
 asklajdsf	
+=======
+asklajdsf
+
+
+>>>>>>> 1f5ee6b16d88d31a64f29aa9114c2fd424956d0b
