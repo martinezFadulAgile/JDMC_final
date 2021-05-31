@@ -32,13 +32,7 @@ spark.sql("SELECT COUNT(clt_tipo_doc) as documentos, cod_cliente FROM clt_docume
 
 
 **********************************************
-4.-select DATEDIFF( '2020-05-27' ,date)/365.25 FROM
- (select clt_fec_nac as date from clt_datos where clt_tipo = 1);
-
-Falta aplicarle un AVG a este resultado, creo que vale la pena
-ver como podemos aplicarlo en spark ya que tenemos esta tabla.
-
---------------------------------------------------------------------
+4.-
 select AVG(a.edades) FROM (
     SELECT DATEDIFF('2020-05-27', b.date)/365.25 AS edades FROM
     (select clt_fec_nac as date from clt_datos where clt_tipo = 1) b
@@ -48,11 +42,12 @@ Select DATEDIFF('2020-05-27', select clt_fec_nac as date from clt_datos where cl
 
 sql
 //Hacer tablas de estas edades
-spark.sql("Select DATEDIFF('2020-05-27', b.date )/365.25 from (select clt_fec_nac as date from clt_datos where clt_tipo = 1)as b ").show()
+spark.sql("Select DATEDIFF('2020-05-27', b.date )/365.25 from 
+(select clt_fec_nac as date from clt_datos where clt_tipo = 1)as b ").show()
 
-// AVG
-spark.sql("Select AVG(a.avg) FROM( SELECT DATEDIFF('2020-05-27', b.date )/365.25 as avg from (select clt_fec_nac as date from clt_datos where clt_tipo = 1)as b ) as a").show()
-
+// AVG final
+spark.sql("Select AVG(a.avg) FROM( SELECT DATEDIFF('2020-05-27', b.date )/
+365.25 as avg from (select clt_fec_nac as date from clt_datos where clt_tipo = 1)as b ) as a").show()
 
 
 
@@ -60,15 +55,42 @@ spark.sql("Select AVG(a.avg) FROM( SELECT DATEDIFF('2020-05-27', b.date )/365.25
 
 
 5.-SELECT  clt_nac, COUNT(clt_nac) FROM Customers Group By clt_nac;
-55
-100
-100
-1000Mexico
+        55
+French  100
+GERMANY 100
+México  1000
+USA     100
+
 **********************************************
 
 6.-
-spark.sql("select substring_index(clt_contac,'@',-1) as dominio, COUNT(*) as numeros from clt_contactabilidad WHERE clt_tipo_contac=1 GROUP BY substring_index(clt_contac,'@',-1)").show()
+spark.sql("select substring_index(clt_contac,'@',-1) as dominio, 
+COUNT(*) as numeros from clt_contactabilidad WHERE clt_tipo_contac=1 
+GROUP BY substring_index(clt_contac,'@',-1)").show
 
+|             dominio|numeros|
++--------------------+-------+
+|        despacho.com|      1|
+|          rangel.com|      1|
+|         hidalgo.org|      1|
+|          roldan.com|      1|
+|           gmail.com|    487|
+|            club.org|      1|
+|            club.com|      2|
+|verdugo-portillo.com|      1|
+|    veliz-osorio.org|      1|
+|          abrego.com|      1|
+|   angulo-tello.info|      1|
+|      corporacin.com|      1|
+|        alvarado.com|      1|
+|         ybarra.info|      1|
+|           yahoo.com|    399|
+|         hotmail.com|    414|
+|   centeno-marin.com|      1|
+| botello-quezada.org|      1|
+|  quinones-muniz.com|      1|
+|        sandoval.org|      1|
++--------------------+-------+
 
 7.-
 // Primero se añaden las columnas solicitadas a la tabla interna
@@ -115,7 +137,8 @@ CREATE TABLE IF NOT EXISTS db_jdmc.aux_nombre(cod_cliente string, clt_nombre_com
 STORED AS parquet
 
  //Llenar la tabla auxiliar Tambiien se usara en la 9
-INSERT INTO aux_nombre SELECT out.cod, CONCAT(out.a,' ',out.b,' ',out.c) from (select cod_cliente as cod, clt_nombre AS a, clt_paterno as b, 
+INSERT INTO aux_nombre SELECT out.cod, CONCAT(out.a,' ',out.b,' ',out.c)
+from (select cod_cliente as cod, clt_nombre AS a, clt_paterno as b, 
 clt_materno as c FROM i_clt_datos) out
 
 //Tabla cliente-rfc***********************************************************************
@@ -150,11 +173,13 @@ ON i_clt_datos.cod_cliente=clt_documentacion.cod_cliente AND clt_documentacion.c
 
 // Tabla8
 //
-CREATE TABLE IF NOT EXISTS db_jdmc.clt_docs_disp(cod_cliente string, nombre_completo string ,rfc string, curp string, pasaporte string )
+CREATE TABLE IF NOT EXISTS db_jdmc.clt_docs_disp(cod_cliente string, 
+nombre_completo string ,rfc string, curp string, pasaporte string )
 STORED AS parquet
 
 INSERT INTO clt_docs_disp select
-aux_nombre.cod_cliente, aux_nombre.clt_nombre_completo, cliente_rfc.rfc, cliente_curp.curp, cliente_pasaporte.pasaporte
+aux_nombre.cod_cliente, aux_nombre.clt_nombre_completo, 
+cliente_rfc.rfc, cliente_curp.curp, cliente_pasaporte.pasaporte
 FROM aux_nombre
 LEFT OUTER JOIN cliente_rfc
 ON aux_nombre.cod_cliente=cliente_rfc.cod_cliente
@@ -178,11 +203,6 @@ ON i_clt_datos.cod_cliente=clt_contactabilidad.cod_cliente AND clt_contactabilid
 //tabla cliente-telefono principal
 CREATE TABLE IF NOT EXISTS db_jdmc.cliente_telefono_principal(cod_cliente string, telefono_principal string)
 STORED AS parquet;
-
-
-
-
-
 
 
 10.-
